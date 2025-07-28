@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart Calculator</title>
+  <style>
+    :root {
+      --bg: #1e1e2f;
+      --btn: #3d3d5c;
+      --disp: #1f1f2d;
+      --txt: #fff;
+      --accent: #ff9500;
+      --green: #34c759;
+      --red: #ff3b30;
+    }
+
+    body.light {
+      --bg: #f5f5f5;
+      --btn: #e0e0e0;
+      --disp: #ffffff;
+      --txt: #000;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: 0.3s;
+    }
+
+    .calculator {
+      width: 280px;
+      background: var(--bg);
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+      padding: 15px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .toggle-theme {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--txt);
+      background: none;
+      color: var(--txt);
+      cursor: pointer;
+    }
+
+    .display {
+      background: var(--disp);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: right;
+      font-size: 1.8rem;
+      overflow-x: auto;
+      margin-bottom: 15px;
+      min-height: 40px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button {
+      padding: 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: var(--btn);
+      color: var(--txt);
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(1.15);
+    }
+
+    .operator { background: var(--accent); }
+    .equal    { background: var(--green); }
+    .clear    { background: var(--red); }
+
+    .history {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      background: var(--disp);
+      padding: 8px;
+      border-radius: 6px;
+      max-height: 80px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      border-bottom: 1px dotted #666;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="top-bar">
+      <span><strong>Calc</strong></span>
+      <button class="toggle-theme" onclick="toggleTheme()">🌙</button>
+    </div>
+    <div class="display" id="display">0</div>
+    <div class="buttons">
+      <button class="clear" onclick="press('AC')">AC</button>
+      <button onclick="press('DEL')">DEL</button>
+      <button onclick="press('%')">%</button>
+      <button class="operator" onclick="press('/')">/</button>
+
+      <button onclick="press('7')">7</button>
+      <button onclick="press('8')">8</button>
+      <button onclick="press('9')">9</button>
+      <button class="operator" onclick="press('*')">×</button>
+
+      <button onclick="press('4')">4</button>
+      <button onclick="press('5')">5</button>
+      <button onclick="press('6')">6</button>
+      <button class="operator" onclick="press('-')">−</button>
+
+      <button onclick="press('1')">1</button>
+      <button onclick="press('2')">2</button>
+      <button onclick="press('3')">3</button>
+      <button class="operator" onclick="press('+')">+</button>
+
+      <button onclick="press('0')">0</button>
+      <button onclick="press('.')">.</button>
+      <button class="equal" style="grid-column: span 2;" onclick="press('=')">=</button>
+    </div>
+    <div class="history" id="historyList"></div>
+  </div>
+
+  <!-- Sound -->
+  <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+
+  <script>
+    const display = document.getElementById("display");
+    const historyList = document.getElementById("historyList");
+    const clickSound = document.getElementById("clickSound");
+
+    function playSound() {
+      clickSound.currentTime = 0;
+      clickSound.play();
+    }
+
+    function press(value) {
+      playSound();
+
+      if (value === 'AC') {
+        display.innerText = '0';
+      } else if (value === 'DEL') {
+        display.innerText = display.innerText.length > 1 ? display.innerText.slice(0, -1) : '0';
+      } else if (value === '=') {
+        try {
+          const expr = display.innerText.replace(/×/g, '*').replace(/−/g, '-');
+          const result = eval(expr);
+          addToHistory(display.innerText + ' = ' + result);
+          display.innerText = result;
+        } catch {
+          display.innerText = "Error";
+          setTimeout(() => display.innerText = "0", 1200);
+        }
+      } else {
+        if (display.innerText === '0' && value !== '.') {
+          display.innerText = value;
+        } else {
+          display.innerText += value;
+        }
+      }
+    }
+
+    function addToHistory(entry) {
+      const div = document.createElement("div");
+      div.classList.add("history-item");
+      div.innerText = entry;
+      historyList.prepend(div);
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      document.querySelector('.toggle-theme').innerText = 
+        document.body.classList.contains('light') ? '🌞' : '🌙';
+    }
+  </script>
+</body>
+</html>
